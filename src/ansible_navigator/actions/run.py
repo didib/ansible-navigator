@@ -8,6 +8,7 @@ import os
 import re
 import shlex
 import shutil
+import time
 import uuid
 
 from math import floor
@@ -248,6 +249,14 @@ class Action(App):
         while True:
             self._dequeue()
             if self.runner.finished:
+                if self.runner_thread.is_alive():
+                    delay = 30
+                    while self.runner_thread.is_alive() and delay>0:
+                        self._logger.debug(f"runner finished - thread is still alive")
+                        time.sleep(1)
+                        delay -= 1
+                    self._logger.debug("Dequeueing last time:")
+                    self._dequeue()
                 if self._args.playbook_artifact_enable:
                     self.write_artifact()
                 self._logger.debug("runner finished")
@@ -600,9 +609,9 @@ class Action(App):
         kwargs.update({"cmdline": pass_through_arg})
 
         self.runner = CommandRunnerAsync(executable_cmd=executable_cmd, queue=self._queue, **kwargs)
-        self.runner.run()
+        self.runner_thread = self.runner.run()
         self._runner_finished = False
-        self._logger.debug("runner requested to start")
+        self._logger.debug(f"runner requested to start - tid {self.runner_thread.native_id}")
 
     def _dequeue(self) -> None:
         """Drain the runner queue"""
