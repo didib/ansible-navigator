@@ -291,10 +291,14 @@ class CommandRunnerAsync(CommandBaseRunner):
         self._logger.debug("ansible-runner event handle: %s", event)
         self._queue.put(event)
 
+    def _status_handler(self, *args, **kwargs):
+        self._logger.debug("ansible-runner status handle: %s, %s", args, kwargs)
+
     def run(self):
         """run"""
         self.generate_run_command_args()
         self._runner_args.update({"event_handler": self._event_handler})
+        self._runner_args.update({"status_handler": self._status_handler})
         thread, self.ansible_runner_instance = run_command_async(**self._runner_args)
         self.status = "running"
         return thread
