@@ -106,6 +106,7 @@ class BaseRunner:
         self.status: Optional[str] = None
         self._runner_args: Dict = {}
         self._runner_args['debug'] = True
+        self._runner_args['runner_mode'] = 'subprocess'
         self._runner_artifact_dir: Optional[str] = None
         if self._ee:
             self._runner_args.update(
